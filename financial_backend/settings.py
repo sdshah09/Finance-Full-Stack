@@ -94,11 +94,11 @@ WSGI_APPLICATION = 'financial_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'database-1',
-        'USER': 'dbuser',
-        'PASSWORD': 'Blockhouse123456789',
-        'HOST': 'database-1.cdg0y0mcuhbr.us-east-1.rds.amazonaws.com',
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'database-1'),
+        'USER': os.getenv('DB_USER', 'dbuser'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'Blockhouse123456789'),
+        'HOST': os.getenv('DB_HOST', 'database-1.cdg0y0mcuhbr.us-east-1.rds.amazonaws.com'),  # Use the RDS endpoint here
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
