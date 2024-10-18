@@ -1,0 +1,11 @@
+django
+psycopg2
+scipy
+yfinance
+pandas 
+numpy 
+scikit-learn 
+joblib
+matplotlib 
+weasyprint 
+reportlab
