@@ -1,38 +1,38 @@
-name: CI/CD Pipeline
+  name: CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - main  # Trigger on push to the 'main' branch
+  on:
+    push:
+      branches:
+        - main  # Trigger on push to the 'main' branch
 
-jobs:
-  build:
-    runs-on: ubuntu-latest  # Run on an Ubuntu GitHub runner
+  jobs:
+    build:
+      runs-on: ubuntu-latest  # Run on an Ubuntu GitHub runner
 
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Checkout the latest code from the repository
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # Checkout the latest code from the repository
 
-    # Set up Docker Buildx
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      # Set up Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-    # Step 1: Build and push Docker image to DockerHub
-    - name: Build and push Docker image to DockerHub
-      run: |
-        docker build -t sdshah05/financial-full-stack:latest .  # Build the Docker image
-        echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # Log in to DockerHub
-        docker push sdshah05/financial-full-stack:latest  # Push the image to DockerHub
+      # Step 1: Build and push Docker image to DockerHub
+      - name: Build and push Docker image to DockerHub
+        run: |
+          docker build -t sdshah05/financial-full-stack:latest .  # Build the Docker image
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # Log in to DockerHub
+          docker push sdshah05/financial-full-stack:latest  # Push the image to DockerHub
 
-    # Step 2: Deploy to EC2
-    - name: Deploy to EC2
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}  # EC2 public IP or domain name
-        username: ${{ secrets.EC2_USER }}  # SSH user (e.g., ubuntu)
-        key: ${{ secrets.EC2_PRIVATE_KEY }}  # SSH private key for EC2 instance
-        script: |
-          cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
-          docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
-          docker-compose down  # Stop the current running containers
-          docker-compose up -d --build  # Start the containers
+      # Step 2: Deploy to EC2
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}  # EC2 public IP or domain name
+          username: ${{ secrets.EC2_USER }}  # SSH user (e.g., ubuntu)
+          key: ${{ secrets.EC2_PRIVATE_KEY }}  # SSH private key for EC2 instance
+          script: |
+            cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
+            docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
+            docker-compose down  # Stop the current running containers
+            docker-compose up -d --build  # Start the containers

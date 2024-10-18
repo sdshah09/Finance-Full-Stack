@@ -6,14 +6,17 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 # Set work directory
-WORKDIR /usr/src/app
+WORKDIR /home/financial_backend
 
 # Install dependencies
-COPY requirements.txt /usr/src/app/
+COPY requirements.txt /home/financial_backend
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . /usr/src/app/
+# Copy project files
+COPY . /home/financial_backend
 
+# Expose port 8000
 EXPOSE 8000
 
+# Command to run Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
