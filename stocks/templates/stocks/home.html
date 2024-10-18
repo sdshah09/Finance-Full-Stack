@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stocks Home</title>
+</head>
+<body>
+    <h1>Welcome to the Stocks Home Page</h1>
+    <p>This is the home page for the stocks application.</p>
+
+    <h1>Fetch Stock Data or Make Predictions</h1>
+
+    <!-- Form to fetch stock data -->
+    <form action="{% url 'fetch_stock_data' %}" method="GET">
+        <label for="symbol">Enter Stock Symbol (e.g., AAPL):</label>
+        <input type="text" id="symbol" name="symbol" placeholder="AAPL" required>
+        <button type="submit">Fetch Stock Data</button>
+    </form>
+
+    <!-- Form to predict stock prices -->
+    <form action="{% url 'predict_stock_prices' %}" method="GET">
+        <label for="symbol_predict">Enter Stock Symbol (e.g., AAPL):</label>
+        <input type="text" id="symbol_predict" name="symbol" placeholder="AAPL" required>
+        <button type="submit">Predict Stock Prices</button>
+    </form>
+
+    <!-- Form to generate report with option for PDF or JSON -->
+    <h2>Generate Stock Report</h1>
+
+    <form action="{% url 'report_view' %}" method="GET">
+        <label for="symbol_report">Enter Stock Symbol (e.g., AAPL):</label>
+        <input type="text" id="symbol_report" name="symbol" placeholder="AAPL" required>
+        
+        <!-- Dropdown to select format -->
+        <label for="format">Choose Report Format:</label>
+        <select name="format" id="format" required>
+            <option value="json">JSON</option>
+            <option value="pdf">PDF</option>
+        </select>
+        
+        <button type="submit">Generate Report</button>
+    </form>
+
+    <!-- Add a link to backtest -->
+    <ul>
+        <li><a href="{% url 'backtest' %}">Backtest</a></li>
+    </ul>
+</body>
+</html>
