@@ -32,7 +32,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}  # SSH user (e.g., ubuntu)
         key: ${{ secrets.EC2_PRIVATE_KEY }}  # SSH private key for EC2 instance
         script: |
-          cd /path/to/your/app/on/ec2  # Navigate to the directory where docker-compose.yml is located
+          cd /home/ubuntu/myapp  # Navigate to the directory where docker-compose.yml is located
           docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
           docker-compose down  # Stop the current running containers
           docker-compose up -d --build  # Start the containers
