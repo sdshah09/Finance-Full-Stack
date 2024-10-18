@@ -9,6 +9,13 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libopenjp2-7-dev \
     gcc \
+    libpangoft2-1.0-0 \
+    libpangocairo-1.0-0 \
+    libfreetype6-dev \
+    libharfbuzz-dev \
+    libfribidi-dev \
+    python3-dev \
+    build-essential \
     && rm -rf /var/lib/apt/lists/*
 
 # Set environment variables
