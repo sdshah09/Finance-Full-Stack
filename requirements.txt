@@ -1,5 +1,4 @@
 django
-psycopg2
 scipy
 yfinance
 pandas 
