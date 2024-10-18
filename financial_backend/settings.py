@@ -86,11 +86,22 @@ WSGI_APPLICATION = 'financial_backend.wsgi.application'
 #     }
 # }
 
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         default=os.getenv('DATABASE_URL')
+#     )
+# }
 DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv('DATABASE_URL')
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'database-1',
+        'USER': 'dbuser',
+        'PASSWORD': 'Blockhouse123456789',
+        'HOST': 'database-1.cdg0y0mcuhbr.us-east-1.rds.amazonaws.com',
+        'PORT': '5432',
+    }
 }
+
 
 
 # Password validation
