@@ -1,6 +1,14 @@
 # Base image
 FROM python:3.10-slim
 
+RUN apt-get update && apt-get install -y \
+    libpq-dev gcc \
+    libpango-1.0-0 \
+    libcairo2 \
+    libgdk-pixbuf2.0-0 \
+    libffi-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
