@@ -32,8 +32,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project files
 COPY . /home/financial_backend
 
+# Copy entrypoint script and set permissions
+COPY entrypoint.sh /home/financial_backend/entrypoint.sh
+RUN chmod +x /home/financial_backend/entrypoint.sh
+
 # Expose port 8000
 EXPOSE 8000
+
+# Set the entrypoint
+ENTRYPOINT ["/home/financial_backend/entrypoint.sh"]
+
 
 # Command to run Django
 CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
