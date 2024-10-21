@@ -16,11 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the project files into the container
 COPY . /app/
 
-# Collect static files for production (if needed)
-RUN python manage.py collectstatic --noinput
-
-# Expose port 8000
+# Expose port 8000 (Django development server runs on this port)
 EXPOSE 8000
 
-# Use Gunicorn for production
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]
+# Collect static files for production (if needed)
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
