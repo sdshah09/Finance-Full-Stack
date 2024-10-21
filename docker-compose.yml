@@ -1,22 +1,12 @@
-version: "3.3"
+version: '3'
 
 services:
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000  # Use Django's development server
+    command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
       - .:/usr/src/app
     ports:
-      - "8000:8000"  # Expose port 8000 to the host
-    environment:
-      DB_HOST: "${DB_HOST}"
-      DB_NAME: "${DB_NAME}"
-      DB_USER: "${DB_USER}"
-      DB_PASSWORD: "${DB_PASSWORD}"
-      DB_PORT: "${DB_PORT}"
-    depends_on:
-      - wait-for-it
-
-  wait-for-it:
-    image: "willwill/wait-for-it"
-    entrypoint: ["./wait-for-it.sh", "${DB_HOST}:${DB_PORT}", "--timeout=60", "--strict", "--", "exit", "0"]
+      - "8000:8000"
+    env_file:
+      - .env  # This points to the .env file for environment variables
