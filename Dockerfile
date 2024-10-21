@@ -7,14 +7,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
-WORKDIR /app
+WORKDIR /home/financial_backend
 
 # Copy the requirements.txt file and install dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the project files into the container
-COPY . /app/
+# Copy project files
+COPY . /home/financial_backend
 
 # Expose port 8000 (Django development server runs on this port)
 EXPOSE 8000
