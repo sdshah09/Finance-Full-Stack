@@ -3,43 +3,53 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger on push to the 'main' branch
+      - main  # Trigger deployment on pushes to the 'main' branch
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      # Step 1: Check out the code
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      # Step 2: Build the Docker image locally
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest .
 
-    - name: Log in to DockerHub
-      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+      # Step 3: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    - name: Build and push Docker image
-      run: |
-        docker build -t sdshah05/financial-full-stack:${{ github.sha }} .
-        docker tag sdshah05/financial-full-stack:${{ github.sha }} sdshah05/financial-full-stack:latest
-        docker push sdshah05/financial-full-stack:${{ github.sha }}
-        docker push sdshah05/financial-full-stack:latest
+      # Step 4: Push the Docker image to Docker Hub
+      - name: Push Docker image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest
 
-    - name: SSH into EC2 and deploy
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          cd /home/ubuntu/financial_backend  # Ensure the directory exists and has docker-compose.yml
-          docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
-          docker-compose down  # Stop the current running containers
-          docker-compose up -d --build  # Rebuild and start the containers with new environment variables
-      env:  # Pass GitHub Secrets as environment variables
-        DB_NAME: ${{ secrets.DB_NAME }}
-        DB_USER: ${{ secrets.DB_USER }}
-        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        DB_HOST: ${{ secrets.DB_HOST }}
-        DB_PORT: ${{ secrets.DB_PORT }}
+      # Step 5: SSH into EC2 using appleboy/ssh-action@master and deploy
+      - name: Deploy to EC2 using SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}          # EC2 public IP or DNS
+          username: ${{ secrets.EC2_USER }}      # EC2 username, typically 'ec2-user' for Amazon Linux
+          key: ${{ secrets.EC2_PRIVATE_KEY }}    # EC2 private key from GitHub Secrets
+          port: 22                               # Default SSH port
+          script: |
+            cd /home/${{ secrets.EC2_USER }}/financial_backend  # Navigate to the project directory
+
+            # Pull the latest Docker image from Docker Hub
+            docker pull ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest
+
+            # Create the .env file if it doesn't exist
+            if [ ! -f .env ]; then
+              echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
+              echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+              echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+              echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+              echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            fi
+
+            # Rebuild and restart the Docker Compose services
+            docker-compose down
+            docker-compose up --build -d

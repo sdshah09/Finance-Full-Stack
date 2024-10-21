@@ -1,21 +1,22 @@
 from pathlib import Path
 import os
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Load environment variables from .env (useful for local development)
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+env_path = os.path.join(BASE_DIR, '.env')
+env_vars = dotenv_values(env_path)  # Load the environment variables from the .env file
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
+# SECRET_KEY = env_vars.get('SECRET_KEY', 'fallback-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+DEBUG = env_vars.get('DEBUG', 'False') == 'True'
 
 # Allowed hosts can be set using an environment variable (separated by commas)
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = env_vars.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 # Application definition
 
@@ -64,11 +65,11 @@ WSGI_APPLICATION = 'financial_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'NAME': env_vars.get('DB_NAME'),
+        'USER': env_vars.get('DB_USER'),
+        'PASSWORD': env_vars.get('DB_PASSWORD'),
+        'HOST': env_vars.get('DB_HOST'),
+        'PORT': env_vars.get('DB_PORT', '5432'),
     }
 }
 print(DATABASES['default']['NAME'])
@@ -76,6 +77,7 @@ print(DATABASES['default']['USER'])
 print(DATABASES['default']['PASSWORD'])
 print(DATABASES['default']['HOST'])
 print(DATABASES['default']['PORT'])
+
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
     {
