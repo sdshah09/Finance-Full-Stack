@@ -31,7 +31,7 @@ jobs:
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
           docker ps -q --filter ancestor=sdshah05/financial-full-stack:latest | xargs -r docker stop
-          docker rmi sdshah05/financial-full-stack:latest || true  # Remove old image, continue if not found
+          docker rmi -f sdshah05/financial-full-stack:latest || true  # Remove old image, continue if not found
 
     # Step 5: Build the new Docker image
     - name: Build and push Docker image to DockerHub
