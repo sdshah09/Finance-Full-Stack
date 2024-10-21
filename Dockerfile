@@ -40,8 +40,8 @@ RUN chmod +x /home/financial_backend/entrypoint.sh
 EXPOSE 8000
 
 # Set the entrypoint
-ENTRYPOINT ["/home/financial_backend/entrypoint.sh"]
+# ENTRYPOINT ["/home/financial_backend/entrypoint.sh"]
 
 
 # Command to run Django
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python3", "manage.py", "runserver", "0.0.0.0:8000"]

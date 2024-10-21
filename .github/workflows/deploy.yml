@@ -47,7 +47,7 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-          cd /home/ubuntu/financial_backend  # Navigate to the project directory
-          docker-compose down  # Stop the current containers
-          docker-compose pull  # Pull the new image from DockerHub
-          docker-compose up -d  # Start the services with the new image
+            cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
+            docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
+            docker-compose down  # Stop the current running containers
+            docker-compose up -d --build  # Start the containers
