@@ -10,7 +10,7 @@ env_path = os.path.join(BASE_DIR, '.env')
 env_vars = dotenv_values(env_path)  # Load the environment variables from the .env file
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# SECRET_KEY = env_vars.get('SECRET_KEY', 'fallback-secret-key')
+SECRET_KEY = env_vars.get('SECRET_KEY', 'fallback-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env_vars.get('DEBUG', 'False') == 'True'
