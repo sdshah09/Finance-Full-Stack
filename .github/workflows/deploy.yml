@@ -33,10 +33,10 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-            cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
-            docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
-            docker-compose down  # Stop the current running containers
-            docker-compose up -d --build  # Start the containers
+          cd /home/ubuntu/financial_backend  # Ensure the directory exists and has docker-compose.yml
+          docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
+          docker-compose down  # Stop the current running containers
+          docker-compose up -d --build  # Rebuild and start the containers with new environment variables
       env:  # Pass GitHub Secrets as environment variables
         DB_NAME: ${{ secrets.DB_NAME }}
         DB_USER: ${{ secrets.DB_USER }}
