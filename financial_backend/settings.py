@@ -11,10 +11,12 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
-import dj_database_url
 import os
+from dotenv import load_dotenv  # Import dotenv to load .env file
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+load_dotenv()
 
 
 # Quick-start development settings - unsuitable for production
@@ -92,14 +94,15 @@ WSGI_APPLICATION = 'financial_backend.wsgi.application'
 #         default=os.getenv('DATABASE_URL')
 #     )
 # }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'financial_db',
-        'USER': 'dbuser',
-        'PASSWORD':'Blockhouse123456789',
-        'HOST':  'database-1.cdg0y0mcuhbr.us-east-1.rds.amazonaws.com',  # Use the RDS endpoint here
-        'PORT': '5432',
+        'NAME': os.getenv('DB_NAME', 'financial_db'),
+        'USER': os.getenv('DB_USER', 'dbuser'),
+        'PASSWORD': os.getenv('DB_PASSWORD', 'yourpassword'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
