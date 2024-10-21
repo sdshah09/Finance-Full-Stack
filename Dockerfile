@@ -1,5 +1,10 @@
-# Use the official Python 3.12.5 slim image from Docker Hub
+# Use the official Python 3.12.5 slim image
 FROM python:3.12.5-slim
+
+# Install system dependencies (if needed)
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
 WORKDIR /app
@@ -11,8 +16,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the rest of the project files into the container
 COPY . /app/
 
-# Expose port 8000 (Django development server runs on this port)
+# Collect static files for production (if needed)
+RUN python manage.py collectstatic --noinput
+
+# Expose port 8000
 EXPOSE 8000
 
-# Default command to run Django development server
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+# Use Gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "myproject.wsgi:application"]

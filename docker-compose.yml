@@ -1,11 +1,11 @@
-version: "3.9"
+version: "3"
 
 services:
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000  # Use Django's development server
     volumes:
-      - .:/home/ubuntu  # Mount the current directory to the /app directory in the container
+      - .:/app  # Mount the current directory to the /app directory in the container
     ports:
       - "8000:8000"  # Expose port 8000 to the host
     environment:
