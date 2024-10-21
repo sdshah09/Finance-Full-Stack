@@ -1,49 +1,53 @@
-  name: CI/CD Pipeline
+name: CI/CD Pipeline
 
-  on:
-    push:
-      branches:
-        - main  # Trigger on push to the 'main' branch
+on:
+  push:
+    branches:
+      - main  # Trigger on push to the 'main' branch
 
-  jobs:
-    build:
-      runs-on: ubuntu-latest  # Run on an Ubuntu GitHub runner
+jobs:
+  build:
+    runs-on: ubuntu-latest  # Use Ubuntu runner
 
-      steps:
-      - name: Checkout code
-        uses: actions/checkout@v2  # Checkout the latest code from the repository
+    steps:
+    # Step 1: Checkout the code from the repository
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      # Set up Docker Buildx
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    # Step 2: Set up Docker Buildx
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-      # Step 1: Build and push Docker image to DockerHub
-      - name: Build and push Docker image to DockerHub
-        run: |
-          docker build -t sdshah05/financial-full-stack:latest .  # Build the Docker image
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin  # Log in to DockerHub
-          docker push sdshah05/financial-full-stack:latest  # Push the image to DockerHub
+    # Step 3: Log in to DockerHub
+    - name: Log in to DockerHub
+      run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-      - name: SSH into EC2 and remove old Docker image
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USER }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: |
-            docker ps -q --filter ancestor=sdshah05/financial-full-stack:latest | xargs -r docker stop
-            docker rmi sdshah05/financial-full-stack:latest || true  # Remove old image, continue if not found
+    # Step 4: Remove the old Docker image from the EC2 server
+    - name: SSH into EC2 and remove old Docker image
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          docker ps -q --filter ancestor=sdshah05/financial-full-stack:latest | xargs -r docker stop
+          docker rmi sdshah05/financial-full-stack:latest || true  # Remove old image, continue if not found
 
-      # Step 2: Deploy to EC2
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}  # EC2 public IP or domain name
-          username: ${{ secrets.EC2_USER }}  # SSH user (e.g., ubuntu)
-          key: ${{ secrets.EC2_PRIVATE_KEY }}  # SSH private key for EC2 instance
-          script: |
-            cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
-            docker-compose down  # Stop the current containers
-            docker-compose pull  # Pull the new image from DockerHub
-            docker-compose up -d  # Start the services with the new image
-  
+    # Step 5: Build the new Docker image
+    - name: Build and push Docker image to DockerHub
+      run: |
+        docker build -t sdshah05/financial-full-stack:latest .
+        docker push sdshah05/financial-full-stack:latest  # Push new image to DockerHub
+
+    # Step 6: SSH into EC2 and deploy the new image
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_PRIVATE_KEY }}
+        script: |
+          cd /home/ubuntu/financial_backend  # Navigate to the project directory
+          docker-compose down  # Stop the current containers
+          docker-compose pull  # Pull the new image from DockerHub
+          docker-compose up -d  # Start the services with the new image
