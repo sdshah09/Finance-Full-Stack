@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-$vpyxi-s^928p_1rgc-%yp!yp7t(ff2@k6yljgue+b!##jmpy&
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+# ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
 
 
 
