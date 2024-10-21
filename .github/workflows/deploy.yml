@@ -7,47 +7,39 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Use Ubuntu runner
+    runs-on: ubuntu-latest
 
     steps:
-    # Step 1: Checkout the code from the repository
     - name: Checkout code
       uses: actions/checkout@v2
 
-    # Step 2: Set up Docker Buildx
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    # Step 3: Log in to DockerHub
     - name: Log in to DockerHub
       run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
-    # Step 4: Remove the old Docker image from the EC2 server
-    - name: SSH into EC2 and remove old Docker image
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.EC2_HOST }}
-        username: ${{ secrets.EC2_USER }}
-        key: ${{ secrets.EC2_PRIVATE_KEY }}
-        script: |
-          docker ps -q --filter ancestor=sdshah05/financial-full-stack:latest | xargs -r docker stop
-          docker rmi -f sdshah05/financial-full-stack:latest || true  # Remove old image, continue if not found
-
-    # Step 5: Build the new Docker image
-    - name: Build and push Docker image to DockerHub
+    - name: Build and push Docker image
       run: |
-        docker build -t sdshah05/financial-full-stack:latest .
-        docker push sdshah05/financial-full-stack:latest  # Push new image to DockerHub
+        docker build -t sdshah05/financial-full-stack:${{ github.sha }} .
+        docker tag sdshah05/financial-full-stack:${{ github.sha }} sdshah05/financial-full-stack:latest
+        docker push sdshah05/financial-full-stack:${{ github.sha }}
+        docker push sdshah05/financial-full-stack:latest
 
-    # Step 6: SSH into EC2 and deploy the new image
-    - name: Deploy to EC2
+    - name: SSH into EC2 and deploy
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
-            cd /home/ubuntu/financial_backend  # Navigate to the directory where docker-compose.yml is located
-            docker pull sdshah05/financial-full-stack:latest  # Pull the latest image from DockerHub
-            docker-compose down  # Stop the current running containers
-            docker-compose up -d --build  # Start the containers
+            cd /home/ubuntu/financial_backend
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d --build
+      env:  # Pass GitHub Secrets as environment variables
+        DB_NAME: ${{ secrets.DB_NAME }}
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PORT: ${{ secrets.DB_PORT }}
