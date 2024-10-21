@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /home/financial_backend
 
 # Copy the requirements.txt file and install dependencies
-COPY requirements.txt /app/
+COPY requirements.txt /home/financial_backend
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy project files
