@@ -14,7 +14,8 @@ def fetch_stock_data(symbol, period='2y'):
 
 def store_stock_data_in_db(symbol):
     data = fetch_stock_data(symbol)
-    if data is None:
+    if data is None or data.empty:
+        print(f"No data found for symbol {symbol}.")
         return
 
     for index, row in data.iterrows():
@@ -23,11 +24,11 @@ def store_stock_data_in_db(symbol):
                 stock_symbol=symbol,
                 date=index.date(),
                 defaults={
-                    'open_price': row['Open'],
-                    'close_price': row['Close'],
-                    'high_price': row['High'],
-                    'low_price': row['Low'],
-                    'volume': row['Volume'],
+                    'open_price': float(row['Open']) if not np.isnan(row['Open']) else None,
+                    'close_price': float(row['Close']) if not np.isnan(row['Close']) else None,
+                    'high_price': float(row['High']) if not np.isnan(row['High']) else None,
+                    'low_price': float(row['Low']) if not np.isnan(row['Low']) else None,
+                    'volume': int(row['Volume']) if not np.isnan(row['Volume']) else None,
                 }
             )
         except Exception as e:
