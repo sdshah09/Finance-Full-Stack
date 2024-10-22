@@ -46,5 +46,4 @@ def predict_stock_prices(stock_symbol, days=30):
             predicted_date=date,
             defaults={'predicted_price': predictions[i]}
         )
-
     return future_dates, predictions
