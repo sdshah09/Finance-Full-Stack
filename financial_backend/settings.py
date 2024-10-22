@@ -16,7 +16,7 @@ SECRET_KEY = env_vars.get('SECRET_KEY', 'fallback-secret-key')
 DEBUG = env_vars.get('DEBUG', 'False') == 'True'
 
 # Allowed hosts can be set using an environment variable (separated by commas)
-ALLOWED_HOSTS = env_vars.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = ['your-domain.com', '52.23.222.31', 'localhost', '127.0.0.1']
 
 # Application definition
 
