@@ -21,12 +21,12 @@ class StockPrice(models.Model):
     
 class StockPrediction(models.Model):
     stock_symbol = models.CharField(max_length=10)
-    predicted_date = models.DateField(db_index=True)
+    predicted_date = models.DateField()
     predicted_price = models.DecimalField(max_digits=10, decimal_places=2)
-    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=['stock_symbol', 'predicted_date'], name='unique_prediction_per_day')
+            models.UniqueConstraint(fields=['stock_symbol', 'predicted_date'], name='unique_stock_prediction')
         ]
 
     

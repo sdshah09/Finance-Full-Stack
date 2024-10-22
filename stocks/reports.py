@@ -68,27 +68,31 @@ def create_pdf_report(data, symbol):
 
 # Ensure the proper calculation logic in generate_report
 def generate_report(symbol):
-    # Fetch the last 30 actual stock prices
+    # Fetch the last 30 actual stock prices in chronological order
     actual_prices = StockPrice.objects.filter(stock_symbol=symbol).order_by('-date')[:30]
     actual_prices = actual_prices[::-1]  # Reverse to get them in chronological order
 
-    # Fetch the 30 predicted stock prices
+    # Fetch the next 30 predicted stock prices
     predicted_prices = StockPrediction.objects.filter(stock_symbol=symbol).order_by('predicted_date')[:30]
 
-    # Extract actual and predicted prices and their dates
+    if not predicted_prices:
+        print(f"No predictions found for {symbol}")
+        return None
+
+    # Extract actual prices and their dates
     actual_dates = [price.date for price in actual_prices]
     actual_values = [float(price.close_price) for price in actual_prices]
 
-    # Start the predicted dates right after the last actual date
+    # Start predicted dates after the last actual date
     last_actual_date = actual_dates[-1]
     predicted_dates = [last_actual_date + timedelta(days=i+1) for i in range(len(predicted_prices))]
     predicted_values = [float(prediction.predicted_price) for prediction in predicted_prices]
 
-    # Calculate key metrics (example: return over the period)
-    total_return = (predicted_values[-1] - actual_values[0]) / actual_values[0] * 100
+    # Calculate performance metrics
+    total_return = (predicted_values[-1] - actual_values[0]) / actual_values[0] * 100 if actual_values[0] != 0 else 0
     max_drawdown = min(predicted_values)  # Simplified for example
 
-    # Create the plot for the last 30 actual and predicted stock prices
+    # Create the plot
     plt.figure(figsize=(10, 6))
     plt.plot(actual_dates, actual_values, label="Actual Prices (Last 30 Days)", color="blue")
     plt.plot(predicted_dates, predicted_values, label="Predicted Prices (Next 30 Days)", color="orange", linestyle="--")
@@ -104,7 +108,7 @@ def generate_report(symbol):
     plt.close()
     buffer.seek(0)
 
-    # Return key metrics and the plot image
+    # Return the performance metrics and plot image
     return {
         'total_return': total_return,
         'max_drawdown': max_drawdown,
