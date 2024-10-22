@@ -7,7 +7,7 @@ import joblib
 import os
 from .models import StockPrice
 import pickle
-
+import pandas as pd
 def fetch_stock_data(symbol, period='2y'):
     data = yf.download(symbol, period=period)
     return data
@@ -24,17 +24,16 @@ def store_stock_data_in_db(symbol):
                 stock_symbol=symbol,
                 date=index.date(),
                 defaults={
-                    'open_price': float(row['Open']) if not np.isnan(row['Open']) else None,
-                    'close_price': float(row['Close']) if not np.isnan(row['Close']) else None,
-                    'high_price': float(row['High']) if not np.isnan(row['High']) else None,
-                    'low_price': float(row['Low']) if not np.isnan(row['Low']) else None,
-                    'volume': int(row['Volume']) if not np.isnan(row['Volume']) else None,
+                    # Extract scalar values and handle NaN
+                    'open_price': float(row['Open']) if not pd.isna(row['Open']) else None,
+                    'close_price': float(row['Close']) if not pd.isna(row['Close']) else None,
+                    'high_price': float(row['High']) if not pd.isna(row['High']) else None,
+                    'low_price': float(row['Low']) if not pd.isna(row['Low']) else None,
+                    'volume': int(row['Volume']) if not pd.isna(row['Volume']) else None,
                 }
             )
         except Exception as e:
             print(f"Error saving data for {symbol} on {index.date()}: {e}")
-
-    print(f"Stored data for {symbol} in the database.")
     train_and_save_model(symbol)
     
 def train_and_save_model(symbol):
