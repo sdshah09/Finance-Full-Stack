@@ -3,53 +3,52 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - main  # Trigger deployment on pushes to the 'main' branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out the code
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Build the Docker image locally
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest .
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-      # Step 3: Log in to Docker Hub
       - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Step 4: Push the Docker image to Docker Hub
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }} .
+
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
 
-      # Step 5: SSH into EC2 using appleboy/ssh-action@master and deploy
       - name: Deploy to EC2 using SSH
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}          # EC2 public IP or DNS
-          username: ${{ secrets.EC2_USER }}      # EC2 username, typically 'ec2-user' for Amazon Linux
-          key: ${{ secrets.EC2_PRIVATE_KEY }}    # EC2 private key from GitHub Secrets
-          port: 22                               # Default SSH port
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          port: 22
           script: |
-            cd /home/${{ secrets.EC2_USER }}/financial_backend  # Navigate to the project directory
-
+            cd /home/${{ secrets.EC2_USER }}/financial_backend
+            
             # Pull the latest Docker image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/financial_backend:latest
-
-            # Create the .env file if it doesn't exist
-            if [ ! -f .env ]; then
-              echo "DB_HOST=${{ secrets.DB_HOST }}" > .env
-              echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
-              echo "DB_USER=${{ secrets.DB_USER }}" >> .env
-              echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
-              echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
-            fi
-
-            # Rebuild and restart the Docker Compose services
-            docker-compose down
+            docker pull ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
+            
+            # Create or update the .env file
+            touch .env
+            grep -qxF 'DB_HOST=${{ secrets.DB_HOST }}' .env || echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            grep -qxF 'DB_NAME=${{ secrets.DB_NAME }}' .env || echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            grep -qxF 'DB_USER=${{ secrets.DB_USER }}' .env || echo "DB_USER=${{ secrets.DB_USER }}" >> .env
+            grep -qxF 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' .env || echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
+            grep -qxF 'DB_PORT=${{ secrets.DB_PORT }}' .env || echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+            
+            # Rebuild and restart services with Docker Compose
+            docker-compose pull
             docker-compose up --build -d
