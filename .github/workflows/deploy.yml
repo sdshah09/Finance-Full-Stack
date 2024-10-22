@@ -22,19 +22,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # Install Docker Compose
-      - name: Install Docker Compose
-        run: |
-          sudo curl -L "https://github.com/docker/compose/releases/download/v2.20.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-          sudo chmod +x /usr/local/bin/docker-compose
-          docker-compose --version
-
-      # Build the image using docker-compose for consistency
-      - name: Build Docker image with Compose
-        run: docker-compose build
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }} .
 
       - name: Push Docker image to Docker Hub
-        run: docker-compose push
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
 
       - name: Deploy to EC2 using SSH
         uses: appleboy/ssh-action@master
@@ -45,7 +37,7 @@ jobs:
           port: 22
           script: |
             # Navigate to project directory or clone the repo if not existing
-            if [ ! -d "/home/${{ secrets.EC2_USER }}/Finance-Full-Stack" ]; then
+            if [ ! -d "/home/${{ secrets.EC2_USER }}/financial_backend" ]; then
               git clone https://github.com/sdshah09/Finance-Full-Stack.git /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
             fi
             cd /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
@@ -53,8 +45,8 @@ jobs:
             git pull origin main
       
             # Pull the latest Docker image from Docker Hub
-            docker-compose pull
-
+            docker pull ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
+      
             # Create or update the .env file
             touch .env
             grep -qxF 'DB_HOST=${{ secrets.DB_HOST }}' .env || echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
@@ -63,8 +55,7 @@ jobs:
             grep -qxF 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' .env || echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             grep -qxF 'DB_PORT=${{ secrets.DB_PORT }}' .env || echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
       
-            # Stop existing containers (if any)
-            docker-compose down
-
             # Rebuild and restart services with Docker Compose
-            yes | docker-compose up --build -d
+            docker-compose pull
+            docker-compose up --build -d
+      
