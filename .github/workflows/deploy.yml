@@ -22,11 +22,12 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }} .
+      # Build the image using docker-compose for consistency
+      - name: Build Docker image with Compose
+        run: docker-compose build
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
+        run: docker-compose push
 
       - name: Deploy to EC2 using SSH
         uses: appleboy/ssh-action@master
@@ -37,7 +38,7 @@ jobs:
           port: 22
           script: |
             # Navigate to project directory or clone the repo if not existing
-            if [ ! -d "/home/${{ secrets.EC2_USER }}/financial_backend" ]; then
+            if [ ! -d "/home/${{ secrets.EC2_USER }}/Finance-Full-Stack" ]; then
               git clone https://github.com/sdshah09/Finance-Full-Stack.git /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
             fi
             cd /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
@@ -45,8 +46,8 @@ jobs:
             git pull origin main
       
             # Pull the latest Docker image from Docker Hub
-            docker pull ${{ secrets.DOCKER_USERNAME }}/financial_backend:${{ github.sha }}
-      
+            docker-compose pull
+
             # Create or update the .env file
             touch .env
             grep -qxF 'DB_HOST=${{ secrets.DB_HOST }}' .env || echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
@@ -55,7 +56,8 @@ jobs:
             grep -qxF 'DB_PASSWORD=${{ secrets.DB_PASSWORD }}' .env || echo "DB_PASSWORD=${{ secrets.DB_PASSWORD }}" >> .env
             grep -qxF 'DB_PORT=${{ secrets.DB_PORT }}' .env || echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
       
+            # Stop existing containers (if any)
+            docker-compose down
+
             # Rebuild and restart services with Docker Compose
-            docker-compose pull
-            docker-compose up --build -d
-      
+            yes | docker-compose up --build -d
