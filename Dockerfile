@@ -1,9 +1,12 @@
 # Use the official Python 3.12.5 slim image
 FROM python:3.12.5-slim
 
-# Install system dependencies (if needed)
+# Install system dependencies, including GObject and GObject introspection
 RUN apt-get update && apt-get install -y \
     libpq-dev \
+    libgirepository1.0-dev \
+    gobject-introspection \
+    gir1.2-glib-2.0 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
