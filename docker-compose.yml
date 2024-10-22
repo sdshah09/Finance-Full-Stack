@@ -5,7 +5,7 @@ services:
     build: .
     command: bash -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
     volumes:
-      - /home/ubuntu/financial_backend:/usr/src/app
+      - /home/ubuntu/Finance-Full-Stack:/usr/src/app
     ports:
       - "8000:8000"
     env_file:

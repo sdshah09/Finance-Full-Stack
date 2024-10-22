@@ -38,9 +38,10 @@ jobs:
           script: |
             # Navigate to project directory or clone the repo if not existing
             if [ ! -d "/home/${{ secrets.EC2_USER }}/financial_backend" ]; then
-              git clone https://github.com/your-username/your-repo.git /home/${{ secrets.EC2_USER }}/financial_backend
+              git clone https://github.com/sdshah09/Finance-Full-Stack.git /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
             fi
-            cd /home/${{ secrets.EC2_USER }}/financial_backend
+            cd /home/${{ secrets.EC2_USER }}/Finance-Full-Stack
+            git fetch origin main
             git pull origin main
       
             # Pull the latest Docker image from Docker Hub

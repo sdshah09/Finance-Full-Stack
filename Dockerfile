@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory in the container
-WORKDIR /home/financial_backend
+WORKDIR /home/ubuntu/Finance-Full-Stack
 
 # Copy the requirements.txt file and install dependencies
 COPY requirements.txt /home/financial_backend
